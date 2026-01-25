@@ -4,12 +4,12 @@ import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  projectId: "asfar-portfolio-db",
-  appId: "1:68054969621:web:a8e598b913e32958ef8d1c",
-  storageBucket: "asfar-portfolio-db.firebasestorage.app",
-  apiKey: "AIzaSyCrhPE9mrLcK3gz1qSi0yZa4Uf9I7Z_AqE",
-  authDomain: "asfar-portfolio-db.firebaseapp.com",
-  messagingSenderId: "68054969621",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
 };
 
 // Initialize Firebase (prevent re-initialization in dev mode)
