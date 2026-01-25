@@ -304,7 +304,7 @@ export default function AdminDashboard() {
                       </h4>
                       
                       <div className="space-y-3">
-                        {!process.env.NEXT_PUBLIC_GEMINI_API_KEY && (
+                        {!process.env.NEXT_PUBLIC_FIREBASE_API_KEY && (
                           <input
                             type="password"
                             value={apiKey}
