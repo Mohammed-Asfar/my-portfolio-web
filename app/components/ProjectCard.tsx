@@ -19,8 +19,8 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
-        {/* Overlay with links */}
-        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
+        {/* Overlay with links (Desktop) */}
+        <div className="hidden md:flex absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 items-center justify-center gap-4">
           {project.githubUrl && (
             <a
               href={project.githubUrl}
@@ -77,6 +77,34 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             <span className="px-2 py-1 bg-surface text-xs rounded-md text-text-muted">
               +{project.technologies.length - 4}
             </span>
+          )}
+        </div>
+
+        {/* Mobile Links (Visible below content) */}
+        <div className="flex md:hidden gap-3 mt-4 pt-4 border-t border-border/50">
+          {project.githubUrl && (
+            <a
+              href={project.githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm text-text-muted hover:text-accent transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <GitHubIcon className="w-5 h-5" />
+              <span>Code</span>
+            </a>
+          )}
+          {project.liveUrl && (
+            <a
+              href={project.liveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm text-text-muted hover:text-accent transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ExternalLinkIcon className="w-5 h-5" />
+              <span>Live Demo</span>
+            </a>
           )}
         </div>
       </div>
