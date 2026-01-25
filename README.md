@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Professional AI Portfolio Website
 
-## Getting Started
+A dynamic, high-performance portfolio website built with **Next.js 16**, **Firebase**, and **Gemini AI**. It features a fully functional Admin Dashboard for managing projects and messages, along with AI-powered content generation.
 
-First, run the development server:
+## 🚀 Features
+
+- **Dynamic Project Showcase**: Fetch and display projects in real-time from Firestore.
+- **Admin Dashboard**: Secure /admin route to manage content.
+  - **Create, Read, Update, Delete (CRUD)** projects.
+  - **Messages Tab**: View and manage inquiries sent from the contact form.
+  - **AI Auto-Fill**: Use Google Gemini AI to automatically generate project titles, descriptions, and tech stacks from raw text.
+- **Real-time Updates**: Changes in the admin panel reflect instantly on the live site.
+- **Image Upload**: Integrated with Firebase Storage for project screenshots.
+- **Contact System**: Visitors can send messages directly to your dashboard.
+- **Responsive Design**: Mobile-first, glassmorphism UI using Tailwind CSS.
+- **SEO Optimized**: Built with Next.js specific SEO practices.
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Backend / Database**: Firebase (Firestore & Storage)
+- **Authentication**: Firebase Auth
+- **AI Integration**: Google Gemini API
+- **Icons**: Heroicons / Custom SVG Components
+
+## ⚙️ Environment Setup
+
+Create a `.env.local` file in the root directory and add the following keys:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Firebase Configuration
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+
+# Google Gemini AI (Optional, for Auto-Fill)
+NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📦 Installation & Running
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/yourusername/portfolio.git
+   cd portfolio
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-## Learn More
+3. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+4. **Build for production:**
+   ```bash
+   npm run build
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔒 Security Rules
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+This project uses **Firestore Security Rules** to ensure data safety:
+- **Public**: Everyone can view projects and create messages.
+- **Admin Only**: Only authenticated users can manage projects and read/delete messages.
 
-## Deploy on Vercel
+## 📄 License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is open source and available under the [MIT License](LICENSE).

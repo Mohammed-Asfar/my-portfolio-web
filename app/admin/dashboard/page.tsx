@@ -35,27 +35,18 @@ export default function AdminDashboard() {
   const [order, setOrder] = useState(0);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
-  const [apiKey, setApiKey] = useState("");
   const [prdText, setPrdText] = useState("");
   const [extracting, setExtracting] = useState(false);
-
-  useEffect(() => {
-    // Try to load API key from local storage
-    const savedKey = localStorage.getItem("gemini_api_key");
-    if (savedKey) setApiKey(savedKey);
-  }, []);
 
   const handleExtract = async () => {
     if (!prdText) return alert("Please enter some text to extract.");
     
     setExtracting(true);
     try {
-      if (apiKey) localStorage.setItem("gemini_api_key", apiKey);
-
       const response = await fetch("/api/extract-project", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: prdText, apiKey }),
+        body: JSON.stringify({ text: prdText }),
       });
 
       const data = await response.json();
@@ -304,15 +295,7 @@ export default function AdminDashboard() {
                       </h4>
                       
                       <div className="space-y-3">
-                        {!process.env.NEXT_PUBLIC_FIREBASE_API_KEY && (
-                          <input
-                            type="password"
-                            value={apiKey}
-                            onChange={(e) => setApiKey(e.target.value)}
-                            placeholder="Paste Gemini API Key (optional if set on server)"
-                            className="w-full px-3 py-2 bg-background border border-border rounded text-sm focus:outline-none focus:border-accent"
-                          />
-                        )}
+
                         
                         <textarea
                           value={prdText}

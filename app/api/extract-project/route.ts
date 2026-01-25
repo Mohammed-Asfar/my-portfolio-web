@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     }
     
     // Use provided API key or fallback to env var
-    const key = apiKey || process.env.GEMINI_API_KEY;
+    const key = apiKey || process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 
     if (!key) {
       return NextResponse.json(
