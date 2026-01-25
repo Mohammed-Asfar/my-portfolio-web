@@ -73,7 +73,7 @@ const services = [
     icon: CodeIcon,
     title: "GenAI & Automation",
     description: "Building AI-powered applications with LangChain, workflow automation with n8n, and integrating LLMs into production systems.",
-    technologies: ["LangChain", "n8n", "OpenAI", "Python"],
+    technologies: ["LangChain", "n8n", "Gemini Model", "Python"],
   },
 ];
 
@@ -150,8 +150,8 @@ export default function Home() {
       {/* Navigation */}
       <nav className="fixed top-4 left-4 right-4 z-50 glass-card px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <a href="#" className="flex items-center">
-            <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-accent/50 hover:border-accent transition-colors duration-200">
+          <a href="#" className="flex items-center gap-3 group">
+            <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-accent/50 group-hover:border-accent transition-colors duration-200">
               <Image
                 src="/profilepic.png"
                 alt="Mohammed Asfar"
@@ -159,6 +159,9 @@ export default function Home() {
                 className="object-cover"
               />
             </div>
+            <span className="font-bold text-xl font-[family-name:var(--font-space-grotesk)] group-hover:text-accent transition-colors">
+              Mohammed Asfar
+            </span>
           </a>
           
           {/* Desktop Navigation */}
@@ -210,7 +213,7 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="min-h-screen flex items-center justify-center px-6 pt-24">
+      <section className="min-h-screen flex items-center justify-center px-6 pt-32">
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
             {/* Profile Picture */}

@@ -287,8 +287,8 @@ export default function AdminDashboard() {
 
           {/* Project Form Modal */}
           {showForm && (
-            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
-              <div className="glass-card w-full max-w-5xl p-6 my-8">
+            <div className="fixed inset-0 bg-black/50 z-50 flex justify-center p-4 overflow-y-auto">
+              <div className="glass-card w-full max-w-4xl p-5 my-8 h-fit">
                 <h3 className="text-xl font-bold mb-6 font-[family-name:var(--font-space-grotesk)]">
                   {editingProject ? "Edit Project" : "Add New Project"}
                 </h3>
@@ -339,7 +339,7 @@ export default function AdminDashboard() {
                       <textarea
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        rows={12}
+                        rows={6}
                         className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-accent resize-none"
                         required
                       />
@@ -379,7 +379,7 @@ export default function AdminDashboard() {
                         className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-accent file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-accent file:text-white file:cursor-pointer"
                       />
                       {imagePreview && (
-                        <div className="mt-2 relative w-full h-48 rounded-lg overflow-hidden border border-border">
+                        <div className="mt-2 relative w-full h-32 rounded-lg overflow-hidden border border-border">
                           <Image src={imagePreview} alt="Preview" fill className="object-cover" />
                         </div>
                       )}
