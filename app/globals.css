@@ -185,6 +185,63 @@ h1, h2, h3, h4, h5, h6 {
   transition: width 1s ease-out;
 }
 
+/* ===== SERVICE CARD ===== */
+.service-card {
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+/* Gradient accent line that reveals along the top on hover */
+.service-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition-normal);
+}
+
+.service-card:hover {
+  border-color: rgba(220, 38, 38, 0.3);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg), 0 0 40px rgba(220, 38, 38, 0.12);
+}
+
+.service-card:hover::before {
+  transform: scaleX(1);
+}
+
+/* Icon tile animates on card hover */
+.service-icon {
+  transition: transform var(--transition-normal), background var(--transition-normal),
+    box-shadow var(--transition-normal);
+}
+
+.service-card:hover .service-icon {
+  transform: scale(1.08) rotate(-3deg);
+  background: rgba(220, 38, 38, 0.18);
+  box-shadow: 0 0 24px rgba(220, 38, 38, 0.25);
+}
+
+/* Large translucent number badge in the corner */
+.service-number {
+  font-family: var(--font-space-grotesk), 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 700;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--border);
+  transition: -webkit-text-stroke-color var(--transition-normal), opacity var(--transition-normal);
+}
+
+.service-card:hover .service-number {
+  -webkit-text-stroke-color: rgba(220, 38, 38, 0.4);
+}
+
 /* ===== GLOW EFFECTS ===== */
 .glow-accent {
   box-shadow: 0 0 40px rgba(220, 38, 38, 0.2);

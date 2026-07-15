@@ -13,13 +13,50 @@ import {
   Project,
 } from "@/lib/projects";
 import { getMessages, deleteMessage, Message } from "@/lib/messages";
+import {
+  getSkills,
+  addSkill,
+  updateSkill,
+  deleteSkill,
+  getTechTags,
+  addTechTag,
+  deleteTechTag,
+  Skill,
+  TechTag,
+} from "@/lib/skills";
+import {
+  getServices,
+  addService,
+  updateService,
+  deleteService,
+  Service,
+  ServiceIcon,
+  SERVICE_ICONS,
+} from "@/lib/services";
 
 export default function AdminDashboard() {
   const { user, loading: authLoading, logout } = useAuth();
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [activeTab, setActiveTab] = useState<"projects" | "messages">("projects");
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [techTags, setTechTags] = useState<TechTag[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [activeTab, setActiveTab] = useState<"projects" | "skills" | "services" | "messages">("projects");
+
+  // Skills form state
+  const [newSkillName, setNewSkillName] = useState("");
+  const [newSkillLevel, setNewSkillLevel] = useState(80);
+  const [newTechName, setNewTechName] = useState("");
+
+  // Service form state
+  const [showServiceForm, setShowServiceForm] = useState(false);
+  const [editingService, setEditingService] = useState<Service | null>(null);
+  const [serviceIcon, setServiceIcon] = useState<ServiceIcon>("code");
+  const [serviceTitle, setServiceTitle] = useState("");
+  const [serviceDescription, setServiceDescription] = useState("");
+  const [serviceTech, setServiceTech] = useState("");
+  const [savingService, setSavingService] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -76,18 +113,160 @@ export default function AdminDashboard() {
   const loadAllData = async () => {
     setLoading(true);
     try {
-      const [projectsData, messagesData] = await Promise.all([
+      const [projectsData, messagesData, skillsData, techData, servicesData] = await Promise.all([
         getProjects(),
         getMessages(),
+        getSkills(),
+        getTechTags(),
+        getServices(),
       ]);
       setProjects(projectsData);
       setMessages(messagesData);
+      setSkills(skillsData);
+      setTechTags(techData);
+      setServices(servicesData);
     } catch (error) {
       console.error("Error loading initial data:", error);
     } finally {
       setLoading(false);
     }
   };
+
+  const loadSkills = async () => {
+    const [skillsData, techData] = await Promise.all([getSkills(), getTechTags()]);
+    setSkills(skillsData);
+    setTechTags(techData);
+  };
+
+  // ----- Skill handlers -----
+  const handleAddSkill = async () => {
+    const name = newSkillName.trim();
+    if (!name) return;
+    try {
+      await addSkill({ name, level: newSkillLevel, order: skills.length });
+      setNewSkillName("");
+      setNewSkillLevel(80);
+      await loadSkills();
+    } catch (error) {
+      console.error("Error adding skill:", error);
+      alert("Failed to add skill.");
+    }
+  };
+
+  const handleSkillLevelChange = (id: string, level: number) => {
+    // Optimistic UI update for smooth slider dragging
+    setSkills((prev) => prev.map((s) => (s.id === id ? { ...s, level } : s)));
+  };
+
+  const handleSkillLevelCommit = async (id: string, level: number) => {
+    try {
+      await updateSkill(id, { level });
+    } catch (error) {
+      console.error("Error updating skill:", error);
+      await loadSkills();
+    }
+  };
+
+  const handleDeleteSkill = async (id: string) => {
+    if (!confirm("Delete this skill?")) return;
+    try {
+      await deleteSkill(id);
+      await loadSkills();
+    } catch (error) {
+      console.error("Error deleting skill:", error);
+    }
+  };
+
+  // ----- Tech tag handlers -----
+  const handleAddTech = async () => {
+    const name = newTechName.trim();
+    if (!name) return;
+    try {
+      await addTechTag({ name, order: techTags.length });
+      setNewTechName("");
+      await loadSkills();
+    } catch (error) {
+      console.error("Error adding tech tag:", error);
+      alert("Failed to add technology.");
+    }
+  };
+
+  const handleDeleteTech = async (id: string) => {
+    try {
+      await deleteTechTag(id);
+      await loadSkills();
+    } catch (error) {
+      console.error("Error deleting tech tag:", error);
+    }
+  };
+
+  // ----- Service handlers -----
+  const loadServices = async () => {
+    const data = await getServices();
+    setServices(data);
+  };
+
+  const resetServiceForm = () => {
+    setEditingService(null);
+    setServiceIcon("code");
+    setServiceTitle("");
+    setServiceDescription("");
+    setServiceTech("");
+  };
+
+  const openAddServiceForm = () => {
+    resetServiceForm();
+    setShowServiceForm(true);
+  };
+
+  const openEditServiceForm = (service: Service) => {
+    setEditingService(service);
+    setServiceIcon(service.icon);
+    setServiceTitle(service.title);
+    setServiceDescription(service.description);
+    setServiceTech(service.technologies.join(", "));
+    setShowServiceForm(true);
+  };
+
+  const handleServiceSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingService(true);
+    try {
+      const serviceData = {
+        icon: serviceIcon,
+        title: serviceTitle,
+        description: serviceDescription,
+        technologies: serviceTech.split(",").map((t) => t.trim()).filter(Boolean),
+        order: editingService ? editingService.order : services.length,
+      };
+
+      if (editingService?.id) {
+        await updateService(editingService.id, serviceData);
+      } else {
+        await addService(serviceData);
+      }
+
+      await loadServices();
+      setShowServiceForm(false);
+      resetServiceForm();
+    } catch (error) {
+      console.error("Error saving service:", error);
+      alert("Failed to save service.");
+    } finally {
+      setSavingService(false);
+    }
+  };
+
+  const handleDeleteService = async (id: string) => {
+    if (!confirm("Delete this service?")) return;
+    try {
+      await deleteService(id);
+      await loadServices();
+    } catch (error) {
+      console.error("Error deleting service:", error);
+    }
+  };
+
 
   const loadProjects = async () => {
     setLoading(true);
@@ -260,6 +439,24 @@ export default function AdminDashboard() {
               </button>
               <span className="text-2xl text-text-muted">/</span>
               <button
+                onClick={() => setActiveTab("skills")}
+                className={`text-2xl font-bold font-[family-name:var(--font-space-grotesk)] transition-colors ${
+                  activeTab === "skills" ? "text-text" : "text-text-muted hover:text-text"
+                }`}
+              >
+                Skills ({skills.length})
+              </button>
+              <span className="text-2xl text-text-muted">/</span>
+              <button
+                onClick={() => setActiveTab("services")}
+                className={`text-2xl font-bold font-[family-name:var(--font-space-grotesk)] transition-colors ${
+                  activeTab === "services" ? "text-text" : "text-text-muted hover:text-text"
+                }`}
+              >
+                Services ({services.length})
+              </button>
+              <span className="text-2xl text-text-muted">/</span>
+              <button
                 onClick={() => setActiveTab("messages")}
                 className={`text-2xl font-bold font-[family-name:var(--font-space-grotesk)] transition-colors ${
                   activeTab === "messages" ? "text-text" : "text-text-muted hover:text-text"
@@ -272,6 +469,11 @@ export default function AdminDashboard() {
             {activeTab === "projects" && (
               <button onClick={openAddForm} className="btn-primary">
                 + Add Project
+              </button>
+            )}
+            {activeTab === "services" && (
+              <button onClick={openAddServiceForm} className="btn-primary">
+                + Add Service
               </button>
             )}
           </div>
@@ -520,6 +722,303 @@ export default function AdminDashboard() {
                 </div>
               ))}
             </div>
+          )}
+
+          {/* Skills Tab */}
+          {!loading && activeTab === "skills" && (
+            <div className="grid gap-6">
+              {/* Skills with percentage */}
+              <div className="glass-card p-6 md:p-8">
+                <h3 className="text-lg font-bold mb-6 font-[family-name:var(--font-space-grotesk)]">
+                  Technical Skills
+                </h3>
+
+                {/* Add new skill */}
+                <div className="flex flex-col sm:flex-row gap-3 mb-6 p-4 bg-surface/50 rounded-lg border border-border">
+                  <input
+                    type="text"
+                    value={newSkillName}
+                    onChange={(e) => setNewSkillName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleAddSkill()}
+                    placeholder="Skill name (e.g. TypeScript)"
+                    className="flex-1 px-4 py-2 bg-background border border-border rounded-lg text-text focus:outline-none focus:border-accent"
+                  />
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={newSkillLevel}
+                      onChange={(e) => setNewSkillLevel(Number(e.target.value))}
+                      className="w-32 accent-accent"
+                    />
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={newSkillLevel}
+                      onChange={(e) =>
+                        setNewSkillLevel(Math.max(0, Math.min(100, Number(e.target.value))))
+                      }
+                      className="w-16 px-2 py-2 bg-background border border-border rounded-lg text-text text-center focus:outline-none focus:border-accent"
+                    />
+                    <span className="text-text-muted text-sm">%</span>
+                  </div>
+                  <button onClick={handleAddSkill} className="btn-primary text-sm py-2 px-5">
+                    + Add
+                  </button>
+                </div>
+
+                {/* Skill list */}
+                {skills.length === 0 ? (
+                  <p className="text-text-muted text-sm text-center py-6">
+                    No skills yet. Add one above.
+                  </p>
+                ) : (
+                  <div className="grid gap-5">
+                    {skills.map((skill) => (
+                      <div key={skill.id} className="flex items-center gap-4">
+                        <span className="font-medium w-40 flex-shrink-0 truncate">
+                          {skill.name}
+                        </span>
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={skill.level}
+                          onChange={(e) =>
+                            skill.id &&
+                            handleSkillLevelChange(skill.id, Number(e.target.value))
+                          }
+                          onMouseUp={(e) =>
+                            skill.id &&
+                            handleSkillLevelCommit(
+                              skill.id,
+                              Number((e.target as HTMLInputElement).value)
+                            )
+                          }
+                          onTouchEnd={(e) =>
+                            skill.id &&
+                            handleSkillLevelCommit(
+                              skill.id,
+                              Number((e.target as HTMLInputElement).value)
+                            )
+                          }
+                          className="flex-1 accent-accent"
+                        />
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={skill.level}
+                          onChange={(e) => {
+                            const lvl = Math.max(0, Math.min(100, Number(e.target.value)));
+                            skill.id && handleSkillLevelChange(skill.id, lvl);
+                          }}
+                          onBlur={(e) =>
+                            skill.id &&
+                            handleSkillLevelCommit(
+                              skill.id,
+                              Math.max(0, Math.min(100, Number(e.target.value)))
+                            )
+                          }
+                          className="w-16 px-2 py-2 bg-surface border border-border rounded-lg text-text text-center focus:outline-none focus:border-accent"
+                        />
+                        <span className="text-text-muted text-sm w-4">%</span>
+                        <button
+                          onClick={() => skill.id && handleDeleteSkill(skill.id)}
+                          className="px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium rounded-lg transition-colors flex-shrink-0"
+                          aria-label={`Delete ${skill.name}`}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Additional technologies (tags) */}
+              <div className="glass-card p-6 md:p-8">
+                <h3 className="text-lg font-bold mb-6 font-[family-name:var(--font-space-grotesk)]">
+                  Additional Technologies
+                </h3>
+
+                <div className="flex gap-3 mb-6 p-4 bg-surface/50 rounded-lg border border-border">
+                  <input
+                    type="text"
+                    value={newTechName}
+                    onChange={(e) => setNewTechName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleAddTech()}
+                    placeholder="Technology name (e.g. Docker)"
+                    className="flex-1 px-4 py-2 bg-background border border-border rounded-lg text-text focus:outline-none focus:border-accent"
+                  />
+                  <button onClick={handleAddTech} className="btn-primary text-sm py-2 px-5">
+                    + Add
+                  </button>
+                </div>
+
+                {techTags.length === 0 ? (
+                  <p className="text-text-muted text-sm text-center py-6">
+                    No technologies yet.
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-3">
+                    {techTags.map((tag) => (
+                      <span
+                        key={tag.id}
+                        className="group flex items-center gap-2 px-4 py-2 bg-surface rounded-full text-sm text-text-muted"
+                      >
+                        {tag.name}
+                        <button
+                          onClick={() => tag.id && handleDeleteTech(tag.id)}
+                          className="text-text-muted hover:text-red-500 transition-colors"
+                          aria-label={`Delete ${tag.name}`}
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Service Form Modal */}
+          {showServiceForm && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex justify-center p-4 overflow-y-auto">
+              <div className="glass-card w-full max-w-2xl p-6 my-8 h-fit">
+                <h3 className="text-xl font-bold mb-6 font-[family-name:var(--font-space-grotesk)]">
+                  {editingService ? "Edit Service" : "Add New Service"}
+                </h3>
+                <form onSubmit={handleServiceSubmit} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-sm text-text-muted mb-2">Title *</label>
+                      <input
+                        type="text"
+                        value={serviceTitle}
+                        onChange={(e) => setServiceTitle(e.target.value)}
+                        className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-accent"
+                        required
+                      />
+                    </div>
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-sm text-text-muted mb-2">Icon</label>
+                      <select
+                        value={serviceIcon}
+                        onChange={(e) => setServiceIcon(e.target.value as ServiceIcon)}
+                        className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-accent"
+                      >
+                        {SERVICE_ICONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-text-muted mb-2">Description *</label>
+                    <textarea
+                      value={serviceDescription}
+                      onChange={(e) => setServiceDescription(e.target.value)}
+                      rows={4}
+                      className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-accent resize-none"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-text-muted mb-2">
+                      Technologies (comma separated) *
+                    </label>
+                    <input
+                      type="text"
+                      value={serviceTech}
+                      onChange={(e) => setServiceTech(e.target.value)}
+                      className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-text focus:outline-none focus:border-accent"
+                      placeholder="Flutter, Firebase, Dart"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-4 pt-6 border-t border-border mt-6">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowServiceForm(false);
+                        resetServiceForm();
+                      }}
+                      className="btn-secondary"
+                    >
+                      Cancel
+                    </button>
+                    <button type="submit" disabled={savingService} className="btn-primary">
+                      {savingService ? "Saving..." : editingService ? "Update" : "Add Service"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Services Tab */}
+          {!loading && activeTab === "services" && (
+            <>
+              {services.length === 0 ? (
+                <div className="glass-card p-12 text-center">
+                  <p className="text-text-muted mb-4">No services yet</p>
+                  <button onClick={openAddServiceForm} className="btn-primary">
+                    Add Your First Service
+                  </button>
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {services.map((service) => (
+                    <div key={service.id} className="glass-card p-6 flex flex-col">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <h3 className="text-lg font-bold font-[family-name:var(--font-space-grotesk)]">
+                          {service.title}
+                        </h3>
+                        <span className="text-xs text-text-muted bg-surface px-2 py-1 rounded whitespace-nowrap">
+                          {service.icon}
+                        </span>
+                      </div>
+                      <p className="text-text-muted text-sm mb-4 flex-1">
+                        {service.description}
+                      </p>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {service.technologies.map((tech) => (
+                          <span
+                            key={tech}
+                            className="text-xs text-text-muted bg-surface/50 px-2 py-1 rounded"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-3 mt-auto pt-4 border-t border-border/50">
+                        <button
+                          onClick={() => openEditServiceForm(service)}
+                          className="px-4 py-2 bg-surface hover:bg-surface-hover text-sm font-medium rounded-lg transition-colors flex-1 text-center"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => service.id && handleDeleteService(service.id)}
+                          className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium rounded-lg transition-colors flex-1 text-center"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
 
           {/* Messages List */}

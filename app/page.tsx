@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { getProjects, Project } from "@/lib/projects";
+import { getSkills, getTechTags, Skill, TechTag } from "@/lib/skills";
+import { getServices, Service, ServiceIcon } from "@/lib/services";
 import { addMessage } from "@/lib/messages";
 import ProjectCard from "./components/ProjectCard";
 import {
@@ -31,51 +33,13 @@ const navLinks = [
   { href: "#contact", label: "Contact" },
 ];
 
-// Skills Data
-const skills = [
-  { name: "Flutter", level: 90 },
-  { name: "Python", level: 90 },
-  { name: "Firebase", level: 85 },
-  { name: "LangChain / GenAI", level: 80 },
-  { name: "AWS CDK", level: 75 },
-  { name: "Django", level: 70 },
-  { name: "Next.js", level: 65 },
-  { name: "React", level: 60 },
-];
-
-const additionalTech = [
-  "Dart", "Java", "C", "FastAPI", "Flask", "Selenium",
-  "Playwright", "MongoDB", "ShadCN UI", "Tailwind CSS", "Vite", "OpenCV",
-  "n8n", "AI Code Editors", "Cursor", "Windsurf"
-];
-
-// Services Data
-const services = [
-  {
-    icon: SmartphoneIcon,
-    title: "Mobile App Development",
-    description: "Cross-platform development using Flutter with Firebase integration, real-time data, and seamless iOS/Android deployment.",
-    technologies: ["Flutter", "Firebase", "Dart", "Bloc"],
-  },
-  {
-    icon: GlobeIcon,
-    title: "Website Development",
-    description: "Responsive, modern websites with stunning UI/UX, API integration, and SEO optimization. Building with Next.js using AI-powered code editors.",
-    technologies: ["Next.js", "React", "Tailwind CSS", "Vite"],
-  },
-  {
-    icon: ServerIcon,
-    title: "Backend & Cloud",
-    description: "REST API development, cloud infrastructure with AWS CDK (Python), database design, and scalable deployment solutions.",
-    technologies: ["AWS CDK", "Django", "FastAPI", "Python"],
-  },
-  {
-    icon: CodeIcon,
-    title: "GenAI & Automation",
-    description: "Building AI-powered applications with LangChain, workflow automation with n8n, and integrating LLMs into production systems.",
-    technologies: ["LangChain", "n8n", "Gemini Model", "Python"],
-  },
-];
+// Maps the icon key stored in Firestore to its component
+const SERVICE_ICON_MAP: Record<ServiceIcon, typeof CodeIcon> = {
+  code: CodeIcon,
+  smartphone: SmartphoneIcon,
+  globe: GlobeIcon,
+  server: ServerIcon,
+};
 
 // Experience Stats
 const stats = [
@@ -107,6 +71,9 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [additionalTech, setAdditionalTech] = useState<TechTag[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
 
   // Message Form State
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
@@ -132,17 +99,25 @@ export default function Home() {
   };
 
   useEffect(() => {
-    async function loadProjects() {
+    async function loadData() {
       try {
-        const data = await getProjects();
-        setProjects(data);
+        const [projectsData, skillsData, techData, servicesData] = await Promise.all([
+          getProjects(),
+          getSkills(),
+          getTechTags(),
+          getServices(),
+        ]);
+        setProjects(projectsData);
+        setSkills(skillsData);
+        setAdditionalTech(techData);
+        setServices(servicesData);
       } catch (error) {
-        console.error("Error loading projects:", error);
+        console.error("Error loading data:", error);
       } finally {
         setLoadingProjects(false);
       }
     }
-    loadProjects();
+    loadData();
   }, []);
 
   return (
@@ -240,10 +215,10 @@ export default function Home() {
                 Mohammed <span className="gradient-text">Asfar</span>
               </h1>
               <p className="text-xl md:text-2xl text-text-muted mb-4 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
-                App Developer • GenAI Developer • Cloud Engineer
+                Software Engineer • App Developer • GenAI Developer • Cloud Engineer
               </p>
               <p className="text-text-muted max-w-2xl mx-auto lg:mx-0 mb-8 animate-fade-in-up" style={{ animationDelay: "300ms" }}>
-                Creating scalable mobile and web applications using Flutter, React, and Python.
+                Creating scalable mobile and web applications using Flutter, Next.js, React, and Python.
                 Building AI-powered solutions with LangChain and deploying to AWS with CDK.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in-up" style={{ animationDelay: "400ms" }}>
@@ -294,9 +269,10 @@ export default function Home() {
           
           <div className="glass-card p-8 md:p-12">
             <p className="text-text-muted leading-relaxed mb-6">
-              I&apos;m Mohammed Asfar, passionate about app development and staying current with the latest 
-              technologies and trends in the field. I&apos;ve developed mobile apps, websites, and desktop 
-              software using Flutter, and I am proficient in Python, Java, C, and Dart.
+              I&apos;m Mohammed Asfar, a software engineer passionate about solving real-world problems by
+              bringing software to life. I love turning ideas into products that make a real difference for
+              the people who use them. I&apos;ve developed mobile apps, websites, and desktop software using
+              Flutter and Next.js, and I am proficient in Python, Java, C, and Dart.
             </p>
             <p className="text-text-muted leading-relaxed mb-6">
               I&apos;ve also worked on several projects, including real-time object detection with OpenCV 
@@ -353,7 +329,7 @@ export default function Home() {
           <div className="glass-card p-8 md:p-12 mb-8">
             <div className="grid gap-6">
               {skills.map((skill) => (
-                <div key={skill.name}>
+                <div key={skill.id}>
                   <div className="flex justify-between mb-2">
                     <span className="font-medium">{skill.name}</span>
                     <span className="text-text-muted">{skill.level}%</span>
@@ -377,10 +353,10 @@ export default function Home() {
             <div className="flex flex-wrap gap-3">
               {additionalTech.map((tech) => (
                 <span
-                  key={tech}
+                  key={tech.id}
                   className="px-4 py-2 bg-surface rounded-full text-sm text-text-muted hover:text-accent hover:bg-surface-hover transition-colors duration-200 cursor-default"
                 >
-                  {tech}
+                  {tech.name}
                 </span>
               ))}
             </div>
@@ -398,14 +374,21 @@ export default function Home() {
             What I can do for you
           </p>
           
-          <div className="grid md:grid-cols-3 gap-6">
-            {services.map((service) => (
+          <div className="grid md:grid-cols-2 gap-6">
+            {services.map((service, index) => {
+              const ServiceIconComponent = SERVICE_ICON_MAP[service.icon] ?? CodeIcon;
+              return (
               <div
-                key={service.title}
-                className="glass-card glass-card-hover p-8 cursor-pointer"
+                key={service.id}
+                className="group glass-card service-card p-8 cursor-pointer"
               >
-                <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center mb-6">
-                  <service.icon className="w-7 h-7 text-accent" />
+                {/* Number badge */}
+                <span className="service-number absolute top-6 right-7 text-5xl md:text-6xl pointer-events-none select-none">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+
+                <div className="service-icon w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center mb-6">
+                  <ServiceIconComponent className="w-7 h-7 text-accent" />
                 </div>
                 <h3 className="text-xl font-semibold mb-3 font-[family-name:var(--font-space-grotesk)]">
                   {service.title}
@@ -417,14 +400,15 @@ export default function Home() {
                   {service.technologies.map((tech) => (
                     <span
                       key={tech}
-                      className="px-3 py-1 bg-surface text-xs rounded-full text-text-muted"
+                      className="px-3 py-1 bg-surface text-xs rounded-full text-text-muted transition-colors duration-200 group-hover:text-text"
                     >
                       {tech}
                     </span>
                   ))}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -471,12 +455,12 @@ export default function Home() {
             {processSteps.map((step) => (
               <div
                 key={step.step}
-                className="glass-card p-6 relative overflow-hidden group cursor-default"
+                className="glass-card service-card p-6 relative overflow-hidden group cursor-default"
               >
-                <div className="absolute top-4 right-4 text-6xl font-bold text-accent/10 font-[family-name:var(--font-space-grotesk)] group-hover:text-accent/20 transition-colors duration-300">
+                <span className="service-number absolute top-3 right-4 text-5xl pointer-events-none select-none">
                   {step.step}
-                </div>
-                <div className="relative z-10">
+                </span>
+                <div className="relative z-10 pt-6">
                   <h3 className="text-lg font-semibold mb-2 font-[family-name:var(--font-space-grotesk)]">
                     {step.title}
                   </h3>
